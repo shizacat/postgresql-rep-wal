@@ -1,0 +1,42 @@
+---
+pgsqlrep_role: skip
+
+# Адрес мастера
+pgsqlrep_master_address: ""
+pgsqlrep_master_pg_port: 5432
+
+# Под каким пользователем запущен postgres
+postgresql_user: postgres
+postgresql_group: postgres
+
+# Пользователь для получения реплик
+pgsqlrep_user: replicator
+# pgsqlrep_password: '' # Store this in an Ansible vault
+
+# Какой тип репликации включен
+pgsqlrep_type_stream: true
+pgsqlrep_type_archiv: true
+
+# Путь к каталогу, где храниться архив
+pgsqlrep_archiv_path: /mnt/archiv
+
+# Настройки postgresql.conf
+pgsqlrep_config_common:
+  - option: wal_level
+    value: replica
+  - option: hot_standby
+    value: "on"
+  - option: max_wal_senders
+    value: 10
+  - option: wal_keep_segments
+    value: 100
+  - option: synchronous_commit
+    value: local
+
+pgsqlrep_archiv_master_config:
+  - option: archive_mode
+    value: "on"
+  - option: archive_command
+    value: "'test ! -f {{ pgsqlrep_archiv_path }}/%f && cp %p {{ pgsqlrep_archiv_path }}/%f'"
+  - option: archive_timeout
+    value: 60

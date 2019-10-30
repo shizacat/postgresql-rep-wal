@@ -1,0 +1,37 @@
+---
+- name: Configure master server (postgresql.conf)
+  lineinfile:
+    dest: "{{ postgresql_conf_dir }}/postgresql.conf"
+    regexp: "^#?{{ item.option }}.+$"
+    line: "{{ item.option }} = {{ item.value }}"
+    state: "{{ item.state | default('present') }}"
+    backrefs: yes
+  with_items: "{{ pgsqlrep_config_common }}"
+  notify: Postgresql restart
+
+- name: Configure master server (postgresql.conf) | PGREP_TYPE_ARCHIV
+  lineinfile:
+    dest: "{{ postgresql_conf_dir }}/postgresql.conf"
+    regexp: "^#?{{ item.option }}.+$"
+    line: "{{ item.option }} = {{ item.value }}"
+    state: "{{ item.state | default('present') }}"
+    backrefs: yes
+  with_items: "{{ pgsqlrep_archiv_master_config }}"
+  notify: Postgresql restart
+  when: pgsqlrep_type_archiv == true
+
+- name: Create replication user account
+  postgresql_user:
+    name: "{{ pgsqlrep_user }}"
+    password: "{{ pgsqlrep_password }}"
+    role_attr_flags: replication
+  become: true
+  become_user: postgres
+
+- name: Add md5 in pg_hba.conf
+  lineinfile:
+    state: present
+    dest: "{{ postgresql_conf_dir }}/pg_hba.conf"
+    regexp: 'host.*replication.*{{ pgsqlrep_user }}.*0\.0\.0\.0/0.*md5'
+    line: 'host    replication    {{ pgsqlrep_user }}    0.0.0.0/0    md5'
+  notify: Postgresql restart

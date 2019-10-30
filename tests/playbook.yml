@@ -1,0 +1,31 @@
+---
+- name: apply common configuration to all nodes
+  hosts: all
+  user: vagrant
+  become: true
+  vars:
+    postgresql_version: '10.6'
+    postgresql_conf:
+      - option: listen_addresses
+        value: "'0.0.0.0'"
+      - option: max_connections
+        value: 50
+  roles:
+    - postgresql
+
+- name: Настройки для тестирования
+  hosts: all
+  user: vagrant
+  become: true
+  tasks:
+    - name: Директория для архива
+      file:
+        path: /mnt/archiv
+        state: directory
+
+- name: Replication
+  hosts: all
+  user: vagrant
+  become: true
+  roles:
+    - postgresql-rep-wal

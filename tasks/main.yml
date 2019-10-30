@@ -1,0 +1,31 @@
+---
+- import_tasks: pgsql_version.yml
+
+# Sets postgresql_conf_dir and postgresql_pgdata
+# - include_vars: "{{ ansible_os_family | lower }}.yml"
+
+- name: Set conf dir fact
+  set_fact: postgresql_conf_dir={{ postgresql_conf_dir_default }}
+  when: postgresql_conf_dir is not defined
+
+- name: Set data dir fact
+  set_fact: postgresql_pgdata={{ postgresql_pgdata_default }}
+  when: postgresql_pgdata is not defined
+
+# Установка зависимых пакетов
+- name: Install dependens package
+  yum:
+    name:
+      - python-psycopg2
+
+# === Main
+- name: Check permishion for folder archiv | PGREP_TYPE_ARCHIV
+  file:
+    path: "{{ pgsqlrep_archiv_path }}"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: 0770
+  when: pgsqlrep_type_archiv == true
+
+- include_tasks: "{{ pgsqlrep_role }}.yml"
+  when: pgsqlrep_role != 'skip'

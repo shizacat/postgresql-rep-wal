@@ -1,0 +1,12 @@
+---
+# Version look up how n.n
+# Example: 10.6 / 9.6
+- name: Get PostgreSQL version
+  command: psql --version
+  changed_when: false
+  check_mode: false
+  register: pgsql_version_check
+
+- name: Set PostgreSQL version
+  set_fact:
+    postgresql_version: "{{ pgsql_version_check['stdout'].split()[-1] }}"

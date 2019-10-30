@@ -1,0 +1,34 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "parallels/centos-7.3"
+
+  config.vm.define "master" do |master|
+    master.vm.hostname = "master"
+    master.vm.network "private_network", ip:"192.168.77.10"
+    master.vm.provision "ansible" do |ansible|
+      ansible.playbook = "playbook.yml"
+      ansible.extra_vars ={
+        pgsqlrep_role: "master",
+        pgsqlrep_password: "123456"
+      }
+    end
+  end
+
+  config.vm.define "slave" do |slave|
+    slave.vm.hostname = "slave"
+    slave.vm.network "private_network", ip:"192.168.77.11"
+    slave.vm.provision "ansible" do |ansible|
+      ansible.playbook = "playbook.yml"
+      ansible.extra_vars ={
+        pgsqlrep_role: "replica",
+        pgsqlrep_master_address: "192.168.77.10",
+        pgsqlrep_password: "123456"
+      }
+    end
+  end
+
+end

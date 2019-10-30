@@ -1,0 +1,6 @@
+---
+# RedHat
+postgresql_conf_dir_default: /var/lib/pgsql/{{ postgresql_version.split('.')[0] }}/data
+postgresql_pgdata_default: /var/lib/pgsql/{{ postgresql_version.split('.')[0] }}/data
+
+# All

@@ -1,0 +1,40 @@
+---
+- name: Stop PostgreSQL
+  service:
+    name: postgresql-{{ postgresql_version.split('.')[0] }}
+    state: stopped
+
+- name: Clear out data directory
+  shell: rm -rf {{ postgresql_pgdata }}/*
+
+- name: Create base backup
+  command: pg_basebackup -X stream -D {{ postgresql_pgdata }} -h {{ pgsqlrep_master_address }} -U {{ pgsqlrep_user }}
+  become: true
+  become_user: "{{ postgresql_user }}"
+  environment:
+    PGPASSWORD: "{{ pgsqlrep_password }}"
+
+- name: Create recovery.conf
+  template:
+    src: recovery.conf.j2
+    dest: "{{ postgresql_pgdata }}/recovery.conf"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: 0640
+
+- name: Configure replica server (postgresql.conf)
+  lineinfile:
+    dest: "{{ postgresql_conf_dir }}/postgresql.conf"
+    regexp: "^#?{{ item.option }}.+$"
+    line: "{{ item.option }} = {{ item.value }}"
+    state: "{{ item.state | default('present') }}"
+    backrefs: yes
+  with_items: "{{ pgsqlrep_config_common }}"
+  become: true
+  become_user: "{{ postgresql_user }}"
+
+- name: Start and enable PostgreSQL
+  service:
+    name: postgresql-{{ postgresql_version.split('.')[0] }}
+    state: started
+    enabled: true

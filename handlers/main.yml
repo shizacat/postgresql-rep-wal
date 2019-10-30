@@ -1,0 +1,6 @@
+---
+- name: Postgresql restart
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: postgresql-{{ postgresql_version.split('.')[0] }}
