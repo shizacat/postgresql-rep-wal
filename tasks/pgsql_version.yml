@@ -10,3 +10,4 @@
 - name: Set PostgreSQL version
   set_fact:
     postgresql_version: "{{ pgsql_version_check['stdout'].split()[-1] }}"
+  when: postgresql_version is not defined

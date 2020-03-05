@@ -4,7 +4,7 @@
   user: vagrant
   become: true
   vars:
-    postgresql_version: '10.6'
+    postgresql_version: '11.7'
     postgresql_conf:
       - option: listen_addresses
         value: "'0.0.0.0'"

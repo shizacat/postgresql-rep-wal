@@ -1,6 +1,9 @@
 ---
 pgsqlrep_role: skip
 
+# Версия postgresql. Можно определить руками, если на сервере их стоит несколько
+# postgresql_version: 12
+
 # Адрес мастера
 pgsqlrep_master_address: ""
 pgsqlrep_master_pg_port: 5432
@@ -44,6 +47,8 @@ pgsqlrep_config_common:
     value: 100
   - option: synchronous_commit
     value: local
+  - option: promote_trigger_file
+    value: "'/tmp/promotedb'"
 
 pgsqlrep_archiv_master_config:
   - option: archive_mode
@@ -52,3 +57,14 @@ pgsqlrep_archiv_master_config:
     value: "{{ pg_archiv_cmd_archive }}"
   - option: archive_timeout
     value: 60
+
+# For 12 and latter
+pgsqlrep_stream_replica_config:
+  - option: primary_conninfo
+    value: "'postgresql://{{ pgsqlrep_user }}:{{ pgsqlrep_password }}@{{ pgsqlrep_master_address }}:{{ pgsqlrep_master_pg_port }}/replication'" #?connect_timeout=10&application_name=myapp
+
+pgsqlrep_archiv_replica_config:
+  - option: restore_command
+    value: "{{ pg_archiv_cmd_restory }}"
+  - option: archive_cleanup_command
+    value: "'/usr/pgsql-{{ postgresql_version }}/bin/pg_archivecleanup {{ pgsqlrep_archiv_path }} %r'"

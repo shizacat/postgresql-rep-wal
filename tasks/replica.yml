@@ -14,13 +14,49 @@
   environment:
     PGPASSWORD: "{{ pgsqlrep_password }}"
 
-- name: Create recovery.conf
+# ---
+- name: Create replica settings (<12) | recovery.conf
   template:
     src: recovery.conf.j2
     dest: "{{ postgresql_pgdata }}/recovery.conf"
     owner: "{{ postgresql_user }}"
     group: "{{ postgresql_group }}"
     mode: 0640
+  when: postgresql_version|int <= 11
+
+- name: Setup replica settings (>12) | Stream
+  lineinfile:
+    dest: "{{ postgresql_conf_dir }}/postgresql.conf"
+    regexp: "^#?{{ item.option }}.+$"
+    line: "{{ item.option }} = {{ item.value }}"
+    state: "{{ item.state | default('present') }}"
+    backrefs: yes
+  with_items: "{{ pgsqlrep_stream_replica_config }}"
+  become: true
+  become_user: "{{ postgresql_user }}"
+  when: postgresql_version|int >= 12 and pgsqlrep_type_stream == true
+
+- name: Setup replica settings (>12) | Arhiv
+  lineinfile:
+    dest: "{{ postgresql_conf_dir }}/postgresql.conf"
+    regexp: "^#?{{ item.option }}.+$"
+    line: "{{ item.option }} = {{ item.value }}"
+    state: "{{ item.state | default('present') }}"
+    backrefs: yes
+  with_items: "{{ pgsqlrep_archiv_replica_config }}"
+  become: true
+  become_user: "{{ postgresql_user }}"
+  when: postgresql_version|int >= 12 and pgsqlrep_type_archiv == true
+
+- name: Setup standby = on (>12) | standby.signal
+  copy:
+    content: ""
+    dest: "{{ postgresql_pgdata }}/standby.signal"
+    force: no
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: 0640
+  when: postgresql_version|int >= 12
 
 - name: Configure replica server (postgresql.conf)
   lineinfile:
@@ -32,6 +68,8 @@
   with_items: "{{ pgsqlrep_config_common }}"
   become: true
   become_user: "{{ postgresql_user }}"
+
+# ---
 
 - name: Start and enable PostgreSQL
   service:

@@ -14,8 +14,12 @@
 
 # Установка зависимых пакетов
 - name: Install dependens package
+  become: true
   yum:
+    state: latest
     name:
+      - openssl
+      - openssl-libs
       - python-psycopg2
 
 # === Main
