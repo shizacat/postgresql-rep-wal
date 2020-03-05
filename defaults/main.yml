@@ -20,6 +20,18 @@ pgsqlrep_type_archiv: true
 # Путь к каталогу, где храниться архив
 pgsqlrep_archiv_path: /mnt/archiv
 
+# Тип архивной репликации: с жатием и без ("gzip", "")
+pgsqlrep_archiv_subkind: ""
+
+pg_archiv_cmd_archive: "\
+  {% if pgsqlrep_archiv_subkind == 'gzip' %}'test ! -f {{ pgsqlrep_archiv_path }}/%f && gzip < %p > {{ pgsqlrep_archiv_path }}/%f'\
+  {% else %}'test ! -f {{ pgsqlrep_archiv_path }}/%f && cp %p {{ pgsqlrep_archiv_path }}/%f'\
+  {% endif %}"
+pg_archiv_cmd_restory: "\
+  {% if pgsqlrep_archiv_subkind == 'gzip' %}'gunzip < {{ pgsqlrep_archiv_path }}/%f > %p'\
+  {% else %}'cp {{ pgsqlrep_archiv_path }}/%f %p'\
+  {% endif %}"
+
 # Настройки postgresql.conf
 pgsqlrep_config_common:
   - option: wal_level
@@ -37,6 +49,6 @@ pgsqlrep_archiv_master_config:
   - option: archive_mode
     value: "on"
   - option: archive_command
-    value: "'test ! -f {{ pgsqlrep_archiv_path }}/%f && cp %p {{ pgsqlrep_archiv_path }}/%f'"
+    value: "{{ pg_archiv_cmd_archive }}"
   - option: archive_timeout
     value: 60
