@@ -8,7 +8,7 @@ Requirements
 
 Для платформы: CentOS
 
-Checked for Postgresql version: 10.6, 11.1
+Checked for Postgresql version: 10.6, 11.1, 11.7, 12.2
 
 Role Variables
 --------------
