@@ -1,2 +1,2 @@
 .vagrant
-tests/roles/*
+tests/roles/postgresql-rep-wal/*
