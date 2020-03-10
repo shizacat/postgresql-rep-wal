@@ -7,5 +7,5 @@ primary_conninfo='postgresql://{{ pgsqlrep_user }}:{{ pgsqlrep_password }}@{{ pg
 # Archiv
 {% if pgsqlrep_type_archiv == true %}
 restore_command = {{ pg_archiv_cmd_restory }}
-archive_cleanup_command = '/usr/pgsql-10/bin/pg_archivecleanup {{ pgsqlrep_archiv_path }} %r'
+archive_cleanup_command = '/usr/pgsql-{{ postgresql_version_major }}/bin/pg_archivecleanup {{ pgsqlrep_archiv_path }} %r'
 {% endif %}

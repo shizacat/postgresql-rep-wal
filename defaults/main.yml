@@ -2,7 +2,7 @@
 pgsqlrep_role: skip
 
 # Версия postgresql. Можно определить руками, если на сервере их стоит несколько
-# postgresql_version: 12
+# postgresql_version: 12.2
 
 # Адрес мастера
 pgsqlrep_master_address: ""
@@ -67,4 +67,4 @@ pgsqlrep_archiv_replica_config:
   - option: restore_command
     value: "{{ pg_archiv_cmd_restory }}"
   - option: archive_cleanup_command
-    value: "'/usr/pgsql-{{ postgresql_version }}/bin/pg_archivecleanup {{ pgsqlrep_archiv_path }} %r'"
+    value: "'/usr/pgsql-{{ postgresql_version_major }}/bin/pg_archivecleanup {{ pgsqlrep_archiv_path }} %r'"
